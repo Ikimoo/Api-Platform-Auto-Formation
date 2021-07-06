@@ -18,7 +18,14 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
  */
 #[ApiResource(
     collectionOperations: [
-        "get", "post"
+        "get" => [
+            "path" => "/cheeses-everywheeeeere",
+            "openapi_context" => [
+                "summary" => "Get a collection of cheeses for our pretty eyes to see",
+                "description" => "Get me the cheeses damnit !"
+            ]
+        ],
+        "post"
     ],
     itemOperations: [
         "get" => [
@@ -28,7 +35,12 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
                 ]
             ]
         ],
-        "put"
+        "put",
+        "patch" => [
+            "normalization_context" => [
+                    "validation_groups" => ["cheese:name:patch"]
+            ]
+        ]
     ],
     paginationItemsPerPage: 10,
     shortName: "cheeses",
@@ -61,6 +73,7 @@ class CheeseListing
         Assert\NotBlank(),
         Assert\Length(min: 2, max: 50, maxMessage: "Describe your cheese in 50 characters or less")
     ]
+    #[Assert\Length(min: 2, max:30, groups: ["cheese:name:patch"])]
     private $title;
 
     /**
