@@ -2,12 +2,14 @@
 
 namespace App\Serializer;
 
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\SerializerAwareInterface;
+use App\Entity\User;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\SerializerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 
-final class ApiNormalizer implements NormalizerInterface, DenormalizerInterface, SerializerAwareInterface
+final class ApiNormalizer implements ContextAwareNormalizerInterface, DenormalizerInterface, SerializerAwareInterface
 {
     private $decorated;
 
@@ -20,9 +22,9 @@ final class ApiNormalizer implements NormalizerInterface, DenormalizerInterface,
         $this->decorated = $decorated;
     }
 
-    public function supportsNormalization($data, $format = null)
+    public function supportsNormalization($data, $format = null, array $context = [])
     {
-        return $this->decorated->supportsNormalization($data, $format);
+        return array_key_exists("collection_operation_name", $context) && $context["collection_operation_name"] === "caps" && $data instanceof User;
     }
 
     public function normalize($object, $format = null, array $context = [])
@@ -30,7 +32,6 @@ final class ApiNormalizer implements NormalizerInterface, DenormalizerInterface,
         $data = $this->decorated->normalize($object, $format, $context);
         if (is_array($data)) {
             $data = array_map('strtoupper', $data);
-            
         }
 
         return $data;

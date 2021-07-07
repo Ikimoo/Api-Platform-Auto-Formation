@@ -40,6 +40,19 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
             "normalization_context" => [
                     "validation_groups" => ["cheese:name:patch"]
             ]
+            ],
+        "twoInOne" => [
+            "method" => "PATCH",
+            "path" => "/patch/twoInOne",
+            "denormalization_context" => [
+                "groups" => [
+                    "patch:change"
+                ]
+                ],
+                "openapi_context" => [
+                    "summary" => "twoInOne will change the title and the description in one go !",
+                    "description" => "Just enter a value to see !"
+                ]
         ]
     ],
     paginationItemsPerPage: 10,
@@ -69,7 +82,7 @@ class CheeseListing
      * @ORM\Column(type="string", length=255)
      */
     #[
-        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write"]),
+        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write", "patch:change"]),
         Assert\NotBlank(),
         Assert\Length(min: 2, max: 50, maxMessage: "Describe your cheese in 50 characters or less")
     ]
@@ -80,7 +93,7 @@ class CheeseListing
      * @ORM\Column(type="text")
      */
     #[
-        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write"]),
+        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write", "patch:change"]),
     ]
     private $description;
 
@@ -116,6 +129,12 @@ class CheeseListing
         Assert\Valid()
     ]
     private $owner;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    #[Groups(["patch:change"])]
+    private $twoInOne;
 
     public function __construct(string $title = null)
     {
@@ -196,6 +215,18 @@ class CheeseListing
     public function setOwner(?User $owner): self
     {
         $this->owner = $owner;
+
+        return $this;
+    }
+
+    public function getTwoInOne(): ?string
+    {
+        return $this->twoInOne;
+    }
+
+    public function setTwoInOne(?string $twoInOne): self
+    {
+        $this->twoInOne = $twoInOne;
 
         return $this;
     }
