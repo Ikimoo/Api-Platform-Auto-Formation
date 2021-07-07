@@ -5,6 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -12,6 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\Capscontroller;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
@@ -22,10 +24,25 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
  */
 #[ApiResource(
     normalizationContext: [
-        "groups" => ["user:read"]
+        "groups" => ["user:read", "collection:caps"]
     ],
     denormalizationContext: [
         "groups" => ["user:write"]
+    ],
+    collectionOperations: [
+        'caps' => [
+            "method" => "GET",
+            "path" => "/get/caps",
+            "normalization_context" => [
+                "groups" => [
+                    "collection:caps"
+                ]
+                ],
+            "openapi_context" => [
+                "summary" => "Let's have averything in UPPERCASE",
+                "description" => "THROW THE UPPERCAAAAASE"
+            ]
+        ]
     ]
 )]
 #[UniqueEntity("username")]
@@ -44,7 +61,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string", length=180, unique=true)
      */
     #[
-        Groups(["user:read", "user:write", "cheese_listing:item:get"]),
+        Groups(["user:read", "user:write", "cheese_listing:item:get", "collection:caps"]),
         Assert\NotBlank(),
         Assert\Email(),
     ]
@@ -66,7 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string", length=255, unique=true)
      */ 
     #[
-        Groups(["user:read", "user:write", "cheese_listing:item:get", "cheese_listing:write"]),
+        Groups(["user:read", "user:write", "cheese_listing:item:get", "cheese_listing:write", "collection:caps"]),
         Assert\NotBlank(),
     ]
     private $username;
@@ -210,4 +227,5 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
 }

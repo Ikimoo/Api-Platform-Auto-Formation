@@ -22,7 +22,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
             "path" => "/cheeses-everywheeeeere",
             "openapi_context" => [
                 "summary" => "Get a collection of cheeses for our pretty eyes to see",
-                "description" => "Get me the cheeses damnit !"
+                "description" => "THROOOOOWWWW THE CHEEEEEEESEEE !"
             ]
         ],
         "post"
