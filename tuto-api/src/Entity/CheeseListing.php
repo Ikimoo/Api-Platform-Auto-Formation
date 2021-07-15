@@ -2,16 +2,18 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiFilter;
-use App\Repository\CheeseListingRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use App\DTO\CheeseInput;
+use App\DTO\DescriptionChangeInput;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\RangeFilter;
+use App\Repository\CheeseListingRepository;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 
 /**
  * @ORM\Entity(repositoryClass=CheeseListingRepository::class)
@@ -37,32 +39,32 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
         ],
         "put",
         "patch" => [
-            "normalization_context" => [
-                    "validation_groups" => ["cheese:name:patch"]
-            ]
-            ],
+            "messenger" => "true"
+        ],
         "twoInOne" => [
             "method" => "PATCH",
-            "path" => "/patch/twoInOne",
-            "denormalization_context" => [
-                "groups" => [
-                    "patch:change"
-                ]
-                ],
-                "openapi_context" => [
-                    "summary" => "twoInOne will change the title and the description in one go !",
-                    "description" => "Just enter a value to see !"
-                ]
+            "path" => "/patch/twoInOne/{id}",
+            "input" => CheeseInput::class,
+            "openapi_context" => [
+                "summary" => "twoInOne will change the title and the description in one go !",
+                "description" => "Just enter a value to see !"
+            ]
+            ],
+        "descriptionChange" => [
+            "method" => "PATCH",
+            "path" => "/cheeses/patch/descriptionChange/{id}",
+            "messenger" => "input",
+            "input" => DescriptionChangeInput::class,
+            "openapi_context" => [
+                "summary" => "Will change only the description via a DTO"
+            ]
         ]
     ],
     paginationItemsPerPage: 10,
     shortName: "cheeses",
     normalizationContext: [
         "groups" => ["cheese_listing:read"]
-    ],
-    denormalizationContext: [
-        "groups" => ["cheese_listing:write"]
-    ],
+    ]
 
 )]
 #[ApiFilter(BooleanFilter::class, properties: ["isPublished"])]
@@ -82,18 +84,17 @@ class CheeseListing
      * @ORM\Column(type="string", length=255)
      */
     #[
-        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write", "patch:change"]),
+        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write"]),
         Assert\NotBlank(),
         Assert\Length(min: 2, max: 50, maxMessage: "Describe your cheese in 50 characters or less")
     ]
-    #[Assert\Length(min: 2, max:30, groups: ["cheese:name:patch"])]
     private $title;
 
     /**
      * @ORM\Column(type="text")
      */
     #[
-        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write", "patch:change"]),
+        Groups(["cheese_listing:read", "cheese_listing:write", "user:read", "user:write"]),
     ]
     private $description;
 
@@ -130,11 +131,6 @@ class CheeseListing
     ]
     private $owner;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    #[Groups(["patch:change"])]
-    private $twoInOne;
 
     public function __construct(string $title = null)
     {
@@ -219,15 +215,4 @@ class CheeseListing
         return $this;
     }
 
-    public function getTwoInOne(): ?string
-    {
-        return $this->twoInOne;
-    }
-
-    public function setTwoInOne(?string $twoInOne): self
-    {
-        $this->twoInOne = $twoInOne;
-
-        return $this;
-    }
 }

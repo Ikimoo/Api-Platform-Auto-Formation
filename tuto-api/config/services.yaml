@@ -26,3 +26,9 @@ services:
     'App\Serializer\ApiNormalizer':
         # By default .inner is passed as argument
         decorates: 'api_platform.jsonld.normalizer.item'
+
+    'App\Serializer\CheeseListingContextBuilder':
+        decorates: 'api_platform.serializer.context_builder'
+        arguments: [ '@App\Serializer\CheeseListingContextBuilder.inner' ]
+
+    'App\DataTransformer\CheeseListingInputDataTransformer': ~
